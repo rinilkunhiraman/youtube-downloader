@@ -1,0 +1,55 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"           # Triggers on version tags like v0.2.0
+
+jobs:
+  build-macos:
+    name: Build macOS .app
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install PyInstaller
+        run: uv pip install pyinstaller
+
+      - name: Install FFmpeg
+        run: brew install ffmpeg
+
+      - name: Build .app bundle
+        run: |
+          .venv/bin/pyinstaller \
+            --name "YouTube Downloader" \
+            --windowed \
+            --onefile \
+            --icon assets/icon.png \
+            --add-data "assets:assets" \
+            --hidden-import "PIL._tkinter_finder" \
+            --hidden-import "yt_dlp" \
+            main.py
+
+      - name: Zip the .app
+        run: |
+          cd dist
+          zip -r "YouTube-Downloader-macOS.zip" "YouTube Downloader.app"
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/YouTube-Downloader-macOS.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

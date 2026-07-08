@@ -2,6 +2,11 @@
 
 A clean, modular YouTube video and audio downloader with a modern GUI built using [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) and [yt-dlp](https://github.com/yt-dlp/yt-dlp).
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+
+> **Note:** Replace `YOUR_USERNAME` in the URLs below with your actual GitHub username after publishing.
+
 ## Features
 
 - 🎥 **Download videos** in best quality (video+audio merged)
@@ -18,13 +23,27 @@ A clean, modular YouTube video and audio downloader with a modern GUI built usin
 
 ### Requirements
 
-- Python 3.13+ (or Python 3.10+ should work)
+- Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
+- FFmpeg (required for video conversion and stream merging)
+
+### Install FFmpeg
+
+```bash
+# macOS
+brew install ffmpeg
+
+# Ubuntu / Debian
+sudo apt install ffmpeg
+
+# Windows
+winget install ffmpeg
+```
 
 ### Install with uv
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/YOUR_USERNAME/youtube-downloader.git
 cd youtube-downloader
 uv sync
 ```
@@ -32,11 +51,11 @@ uv sync
 ### Install with pip
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/YOUR_USERNAME/youtube-downloader.git
 cd youtube-downloader
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt  # or install dependencies manually
+pip install customtkinter pillow requests yt-dlp
 ```
 
 ## Usage
@@ -202,7 +221,13 @@ MIT (or your preferred license)
 
 ## Contributing
 
-PRs welcome! Feel free to open issues for bugs or feature requests.
+PRs welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+Some good first contributions:
+- Add tests
+- Playlist support
+- Subtitle download options
+- Linux/Windows packaging scripts
 
 ## Acknowledgements
 
