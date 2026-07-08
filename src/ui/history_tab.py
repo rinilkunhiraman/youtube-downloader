@@ -165,13 +165,22 @@ class HistoryTab(ctk.CTkFrame):
         try:
             share_to_whatsapp(entry.path)
             messagebox.showinfo(
-                "WhatsApp",
-                "WhatsApp opened.\nAttach the file and send it.",
+                "Share via WhatsApp",
+                "The file has been revealed in Finder and WhatsApp is open.\n\n"
+                "Drag the file into any WhatsApp chat to send it.",
             )
         except FileNotFoundError:
             messagebox.showerror("Not Found", f"File not found:\n{entry.path}")
         except RuntimeError as exc:
-            messagebox.showerror("Share Failed", str(exc))
+            if str(exc) == "whatsapp_web":
+                messagebox.showinfo(
+                    "WhatsApp Web Opened",
+                    "WhatsApp Desktop wasn't found.\n\n"
+                    "WhatsApp Web has been opened in your browser.\n"
+                    "The file is revealed in Finder — drag it into a chat to send.",
+                )
+            else:
+                messagebox.showerror("Share Failed", str(exc))
 
     def _delete_entry(self, idx: int) -> None:
         self._hm.remove(idx)

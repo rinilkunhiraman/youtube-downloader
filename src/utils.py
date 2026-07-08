@@ -79,7 +79,12 @@ def sanitize_filename(name: str, replacement: str = "_") -> str:
 
 def share_to_whatsapp(file_path: str) -> None:
     """
-    Attempt to open WhatsApp Desktop and pass *file_path* to it.
+    Share a file via WhatsApp on macOS.
+
+    Strategy:
+    1. Reveal the file in Finder (so user can see it)
+    2. Open WhatsApp so it's ready to receive
+    3. User drags the file into a WhatsApp chat
 
     Raises:
         FileNotFoundError  if the file doesn't exist.
@@ -88,17 +93,25 @@ def share_to_whatsapp(file_path: str) -> None:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    try:
-        if sys.platform == "darwin":
-            subprocess.run(["open", "-a", "WhatsApp", file_path], check=True)
-        elif sys.platform == "win32":
-            subprocess.run(["start", "whatsapp:", file_path], shell=True, check=True)
-        else:
-            subprocess.run(["xdg-open", f"whatsapp://send?file={file_path}"], check=True)
-    except subprocess.CalledProcessError as exc:
-        raise RuntimeError(
-            "Could not open WhatsApp. Make sure WhatsApp Desktop is installed."
-        ) from exc
+    if sys.platform == "darwin":
+        # Step 1: Reveal the file in Finder
+        subprocess.run(["open", "-R", file_path], check=False)
+
+        # Step 2: Try to open WhatsApp
+        result = subprocess.run(
+            ["open", "-a", "WhatsApp"],
+            capture_output=True,
+        )
+        if result.returncode != 0:
+            # WhatsApp Desktop not installed — fall back to web
+            subprocess.run(["open", "https://web.whatsapp.com"], check=False)
+            raise RuntimeError("whatsapp_web")
+
+    elif sys.platform == "win32":
+        subprocess.run(["explorer", f"/select,{file_path}"], check=False)
+        subprocess.run(["start", "whatsapp:"], shell=True, check=False)
+    else:
+        subprocess.run(["xdg-open", file_path], check=False)
 
 
 # ---------------------------------------------------------------------------
