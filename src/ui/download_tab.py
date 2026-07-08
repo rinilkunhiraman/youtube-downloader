@@ -135,7 +135,27 @@ class DownloadTab(ctk.CTkFrame):
             font=ctk.CTkFont(size=15),
             command=self._on_audio_toggle,
         )
-        audio_cb.pack(anchor="w", padx=25, pady=(12, 12))
+        audio_cb.pack(anchor="w", padx=25, pady=(12, 4))
+
+        # Browser cookie selector — fixes 403 errors
+        cookie_row = ctk.CTkFrame(options, fg_color="transparent")
+        cookie_row.pack(fill="x", padx=25, pady=(4, 12))
+
+        ctk.CTkLabel(
+            cookie_row,
+            text="Use cookies from browser (fixes 403 errors):",
+            anchor="w",
+            font=ctk.CTkFont(size=13),
+        ).pack(anchor="w")
+
+        self._browser_var = ctk.StringVar(value="None")
+        ctk.CTkOptionMenu(
+            cookie_row,
+            variable=self._browser_var,
+            values=["None", "chrome", "safari", "firefox", "edge", "brave"],
+            width=160,
+            command=self._on_browser_change,
+        ).pack(anchor="w", pady=(4, 0))
 
         # Save-to path
         path_row = ctk.CTkFrame(options, fg_color="transparent")
@@ -180,6 +200,15 @@ class DownloadTab(ctk.CTkFrame):
         audio_only = self._audio_var.get()
         state = "disabled" if audio_only else "normal"
         self._quality_menu.configure(state=state)
+
+    def _on_browser_change(self, browser: str) -> None:
+        """Recreate the Downloader with the selected browser for cookies."""
+        selected = None if browser == "None" else browser
+        self._downloader = Downloader(
+            on_progress=self._on_progress,
+            on_status=self._on_status,
+            cookies_from_browser=selected,
+        )
 
     def _fetch_video(self) -> None:
         url = self._url_entry.get().strip()

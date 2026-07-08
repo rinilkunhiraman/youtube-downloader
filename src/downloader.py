@@ -73,9 +73,11 @@ class Downloader:
         self,
         on_progress: Optional[ProgressCallback] = None,
         on_status: Optional[StatusCallback] = None,
+        cookies_from_browser: Optional[str] = None,
     ):
         self.on_progress = on_progress
         self.on_status = on_status
+        self.cookies_from_browser = cookies_from_browser  # e.g. "chrome", "safari"
         self._active_ydl: Optional[yt_dlp.YoutubeDL] = None
 
     # ------------------------------------------------------------------
@@ -135,8 +137,11 @@ class Downloader:
             "http_headers": HTTP_HEADERS,
             "user_agent": USER_AGENT,
         }
+        # cookies.txt takes priority; fall back to browser cookies
         if os.path.exists(COOKIES_FILE):
             opts["cookiefile"] = COOKIES_FILE
+        elif self.cookies_from_browser:
+            opts["cookiesfrombrowser"] = (self.cookies_from_browser,)
         # Point yt-dlp at the bundled ffmpeg if available
         ffmpeg = get_ffmpeg_path()
         if ffmpeg:
