@@ -1,0 +1,12 @@
+[project]
+name = "youtube-downloader"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "customtkinter>=6.0.0",
+    "pillow>=12.3.0",
+    "requests>=2.34.2",
+    "yt-dlp>=2026.7.4",
+]
