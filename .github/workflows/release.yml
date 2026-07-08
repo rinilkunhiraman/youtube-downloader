@@ -5,10 +5,14 @@ on:
     tags:
       - "v*"           # Triggers on version tags like v0.2.0
 
+# Grant permission to create releases and upload assets
+permissions:
+  contents: write
+
 jobs:
   build-macos:
     name: Build macOS .app
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,7 +32,9 @@ jobs:
         run: uv pip install pyinstaller
 
       - name: Install FFmpeg
-        run: brew install ffmpeg
+        run: |
+          export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
+          brew install ffmpeg
 
       - name: Build .app bundle
         run: |
@@ -51,5 +57,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/YouTube-Downloader-macOS.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
