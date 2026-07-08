@@ -4,7 +4,9 @@ Application-wide constants and default settings.
 import os
 
 # --- App ---
-APP_TITLE = "YouTube Downloader"
+APP_NAME = "YouTube Downloader"
+APP_VERSION = "0.2.0"
+APP_TITLE = f"{APP_NAME} v{APP_VERSION}"
 APP_GEOMETRY = "950x750"
 APP_MIN_SIZE = (900, 700)
 APPEARANCE_MODE = "dark"

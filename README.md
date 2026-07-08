@@ -105,6 +105,41 @@ youtube-downloader/
 
 ## Development
 
+### Quick reference
+
+```bash
+make dev      # Run in dev mode (instant code updates)
+make build    # Build .app bundle
+make clean    # Remove build artifacts
+make install  # Sync dependencies
+```
+
+### Development workflow
+
+**During active coding:**
+```bash
+make dev
+# or just: ./launch.sh
+```
+This runs the app directly from source. Every time you restart it, it picks up your latest code changes immediately — no rebuild needed.
+
+**Testing the packaged .app:**
+```bash
+make build
+open "dist/YouTube Downloader.app"
+```
+This creates a standalone `.app` bundle. You must rebuild every time you change code if you want the `.app` to reflect those changes.
+
+**Auto-rebuild on save (optional):**
+```bash
+# First install fswatch
+brew install fswatch
+
+# Then run the watcher
+./watch_and_rebuild.sh
+```
+This watches your Python files and automatically rebuilds the `.app` whenever you save. Great for testing the packaged version during development.
+
 ### Adding new features
 
 - **New download format?** → Update `src/downloader.py` and `src/config.py`
@@ -115,6 +150,23 @@ youtube-downloader/
 ### Running tests
 
 (Tests not yet implemented — PRs welcome!)
+
+### How do real apps update themselves?
+
+You asked: "How do we update the code and make it reflect in the app just like the real app?"
+
+**During development:**
+- Run `make dev` — picks up changes instantly, no rebuild
+- Or use `./watch_and_rebuild.sh` to auto-rebuild the `.app` on every save
+
+**For distribution (like App Store apps):**
+Real apps use one of these strategies:
+1. **Manual rebuild + distribute** — rebuild with `make build`, then share the new `.app` (what we're doing now)
+2. **Auto-update frameworks** — integrate [Sparkle](https://sparkle-project.org/) (macOS) or similar to check for updates on launch
+3. **App Store** — Apple handles updates automatically
+4. **CI/CD pipeline** — GitHub Actions rebuilds and uploads new versions on every commit
+
+For a simple project like this, **option 1** (manual rebuild) is cleanest. If you want auto-updates later, add Sparkle or publish via the Mac App Store.
 
 ## Troubleshooting
 
