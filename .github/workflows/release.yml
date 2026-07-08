@@ -38,12 +38,15 @@ jobs:
 
       - name: Build .app bundle
         run: |
+          FFMPEG_PATH=$(which ffmpeg)
+          echo "Bundling ffmpeg from: $FFMPEG_PATH"
           .venv/bin/pyinstaller \
             --name "YouTube Downloader" \
             --windowed \
             --onefile \
             --icon assets/icon.png \
             --add-data "assets:assets" \
+            --add-binary "$FFMPEG_PATH:." \
             --hidden-import "PIL._tkinter_finder" \
             --hidden-import "yt_dlp" \
             main.py

@@ -5,6 +5,7 @@ Callbacks use plain callables so any frontend (Tkinter, CLI, web) can plug in.
 """
 import os
 import shutil
+import sys
 from threading import Thread
 from typing import Callable, Optional
 import yt_dlp
@@ -29,9 +30,34 @@ class DownloadError(Exception):
     """Raised when a download fails."""
 
 
+def _bundled_ffmpeg_path() -> Optional[str]:
+    """
+    Return the path to the ffmpeg binary bundled inside the .app (PyInstaller),
+    or None if running from source.
+    """
+    if getattr(sys, "frozen", False):
+        # Running inside a PyInstaller bundle — ffmpeg is next to the executable
+        base = sys._MEIPASS  # type: ignore[attr-defined]
+        candidate = os.path.join(base, "ffmpeg")
+        if os.path.isfile(candidate):
+            return candidate
+    return None
+
+
+def get_ffmpeg_path() -> Optional[str]:
+    """
+    Resolve ffmpeg: bundled binary first, then system PATH.
+    Returns the full path string, or None if not found anywhere.
+    """
+    bundled = _bundled_ffmpeg_path()
+    if bundled:
+        return bundled
+    return shutil.which("ffmpeg")
+
+
 def check_ffmpeg_installed() -> bool:
-    """Returns True if ffmpeg is available in PATH."""
-    return shutil.which("ffmpeg") is not None
+    """Returns True if ffmpeg is available (bundled or in PATH)."""
+    return get_ffmpeg_path() is not None
 
 
 class Downloader:
@@ -111,6 +137,10 @@ class Downloader:
         }
         if os.path.exists(COOKIES_FILE):
             opts["cookiefile"] = COOKIES_FILE
+        # Point yt-dlp at the bundled ffmpeg if available
+        ffmpeg = get_ffmpeg_path()
+        if ffmpeg:
+            opts["ffmpeg_location"] = os.path.dirname(ffmpeg)
         return opts
 
     def _build_download_opts(
