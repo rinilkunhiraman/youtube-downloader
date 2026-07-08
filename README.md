@@ -211,17 +211,33 @@ Some videos require authentication. Export cookies from your browser and save as
 
 This happens because the app isn't code-signed (requires a paid Apple Developer account).
 
-**Fix:**
-1. Right-click (or Control+click) the app → select "Open"
-2. Click "Open" in the security dialog
-3. The app will now open, and you won't see this warning again
+**Fix 1 — Right-click method (quickest)**
+1. Right-click (or Control+click) the `.app`
+2. Select **"Open"** from the context menu *(not double-click)*
+3. Click **"Open"** again in the dialog
+4. The app launches — macOS remembers your choice permanently
 
-**Alternative via Terminal:**
+**Fix 2 — Privacy & Security settings**
+
+If the right-click method doesn't show an "Open" option:
+
+1. Try opening the app normally first (so macOS registers the block)
+2. Go to **Apple menu () → System Settings → Privacy & Security**
+3. Scroll down to the **Security** section
+4. You'll see: *"YouTube Downloader was blocked because it is not from an identified developer"*
+5. Click **"Open Anyway"**
+6. Enter your Mac password when prompted
+7. Click **"Open"** in the final confirmation dialog
+
+> The "Open Anyway" button only appears for ~1 hour after a blocked attempt, so open the app first, then immediately go to System Settings.
+
+**Fix 3 — Terminal**
 ```bash
-xattr -d com.apple.quarantine "/path/to/YouTube Downloader.app"
+sudo xattr -rd com.apple.quarantine ~/Downloads/YouTube\ Downloader.app
+open ~/Downloads/YouTube\ Downloader.app
 ```
 
-**Why this happens:** macOS Gatekeeper blocks all unsigned apps by default. Code signing requires a $99/year Apple Developer membership.
+**Why this happens:** macOS Gatekeeper blocks all unsigned apps. Code signing requires a $99/year Apple Developer membership.
 
 ## License
 

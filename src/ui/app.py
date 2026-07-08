@@ -109,6 +109,35 @@ class App(ctk.CTk):
             text_color="#444466",
         ).pack(side="right", padx=16)
 
+        # Dark/light mode toggle in footer
+        self._theme_btn = ctk.CTkButton(
+            footer,
+            text="☀️ Light",
+            width=80,
+            height=20,
+            font=ctk.CTkFont(size=11),
+            fg_color="transparent",
+            hover_color="#2a2a3a",
+            text_color="#555577",
+            command=self._toggle_theme,
+        )
+        self._theme_btn.pack(side="right", padx=(0, 8))
+        self._is_dark = True
+
+    # ------------------------------------------------------------------
+    # Theme toggle
+    # ------------------------------------------------------------------
+
+    def _toggle_theme(self) -> None:
+        if self._is_dark:
+            ctk.set_appearance_mode("light")
+            self._theme_btn.configure(text="🌙 Dark")
+            self._is_dark = False
+        else:
+            ctk.set_appearance_mode("dark")
+            self._theme_btn.configure(text="☀️ Light")
+            self._is_dark = True
+
     # ------------------------------------------------------------------
     # Cross-tab event bridge
     # ------------------------------------------------------------------
