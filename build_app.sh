@@ -23,18 +23,26 @@ echo "📍 Found ffmpeg at: $FFMPEG_PATH"
 # Clean previous builds
 rm -rf build dist
 
-# Build the .app bundle
-# --add-binary bundles the ffmpeg binary directly inside the app
+# Build the .app bundle using --onedir (more reliable for bundling binaries)
+# --add-binary copies ffmpeg into the bundle's Contents/MacOS/ folder
 .venv/bin/pyinstaller \
     --name "YouTube Downloader" \
     --windowed \
-    --onefile \
+    --onedir \
     --icon assets/icon.png \
     --add-data "assets:assets" \
     --add-binary "$FFMPEG_PATH:." \
     --hidden-import "PIL._tkinter_finder" \
     --hidden-import "yt_dlp" \
     main.py
+
+# Verify ffmpeg made it in
+BUNDLED_FFMPEG="dist/YouTube Downloader.app/Contents/MacOS/ffmpeg"
+if [ -f "$BUNDLED_FFMPEG" ]; then
+    echo "✅ ffmpeg bundled successfully ($(du -sh "$BUNDLED_FFMPEG" | cut -f1))"
+else
+    echo "⚠️  ffmpeg not found in bundle — users will need ffmpeg installed"
+fi
 
 echo ""
 echo "✅ Build complete!"

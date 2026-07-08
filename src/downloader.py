@@ -36,7 +36,7 @@ def _bundled_ffmpeg_path() -> Optional[str]:
     or None if running from source.
     """
     if getattr(sys, "frozen", False):
-        # Running inside a PyInstaller bundle — ffmpeg is next to the executable
+        # PyInstaller sets sys._MEIPASS to the bundle's Resources directory
         base = sys._MEIPASS  # type: ignore[attr-defined]
         candidate = os.path.join(base, "ffmpeg")
         if os.path.isfile(candidate):

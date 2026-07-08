@@ -43,7 +43,7 @@ jobs:
           .venv/bin/pyinstaller \
             --name "YouTube Downloader" \
             --windowed \
-            --onefile \
+            --onedir \
             --icon assets/icon.png \
             --add-data "assets:assets" \
             --add-binary "$FFMPEG_PATH:." \
