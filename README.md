@@ -5,8 +5,6 @@ A clean, modular YouTube video and audio downloader with a modern GUI built usin
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-> **Note:** Replace `YOUR_USERNAME` in the URLs below with your actual GitHub username after publishing.
-
 ## Features
 
 - 🎥 **Download videos** in best quality (video+audio merged)
@@ -43,7 +41,7 @@ winget install ffmpeg
 ### Install with uv
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/youtube-downloader.git
+git clone https://github.com/rinilkunhiraman/youtube-downloader.git
 cd youtube-downloader
 uv sync
 ```
@@ -51,7 +49,7 @@ uv sync
 ### Install with pip
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/youtube-downloader.git
+git clone https://github.com/rinilkunhiraman/youtube-downloader.git
 cd youtube-downloader
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate

@@ -16,7 +16,7 @@ Thanks for your interest in contributing! This project welcomes contributions of
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/youtube-downloader.git
+git clone https://github.com/rinilkunhiraman/youtube-downloader.git
 cd youtube-downloader
 
 # Install dependencies
