@@ -109,6 +109,7 @@ class Downloader:
         audio_only: bool = False,
         video_format: Optional[str] = None,
         on_complete: Optional[Callable[[str], None]] = None,
+        on_error: Optional[Callable[[str], None]] = None,
     ) -> None:
         """
         Start a download in a background thread.
@@ -117,13 +118,13 @@ class Downloader:
             url:          Video URL.
             output_dir:   Directory to save the file.
             audio_only:   Extract MP3 instead of keeping video.
-            video_format: yt-dlp format string (e.g., 'best', 'bestvideo+bestaudio').
-                          If None, uses DEFAULT_VIDEO_FORMAT.
+            video_format: yt-dlp format string.
             on_complete:  Called with the saved file path when done.
+            on_error:     Called with an error message string on failure.
         """
         thread = Thread(
             target=self._download_worker,
-            args=(url, output_dir, audio_only, video_format, on_complete),
+            args=(url, output_dir, audio_only, video_format, on_complete, on_error),
             daemon=True,
         )
         thread.start()
@@ -189,6 +190,7 @@ class Downloader:
         audio_only: bool,
         video_format: Optional[str],
         on_complete: Optional[Callable[[str], None]],
+        on_error: Optional[Callable[[str], None]],
     ) -> None:
         saved_path: Optional[str] = None
 
@@ -208,7 +210,6 @@ class Downloader:
                 self._active_ydl = ydl
                 info = ydl.extract_info(url, download=True)
 
-            # Resolve final file path from info dict if hook didn't capture it
             if saved_path is None and info:
                 ext = DEFAULT_AUDIO_CODEC if audio_only else "mp4"
                 title = info.get("title", "download")
@@ -220,8 +221,10 @@ class Downloader:
                 on_complete(saved_path)
 
         except Exception as exc:
-            self._emit_status(f"❌ Error: {exc}")
-            raise DownloadError(str(exc)) from exc
+            msg = str(exc)
+            self._emit_status(f"❌ Error: {msg}")
+            if on_error:
+                on_error(msg)
         finally:
             self._active_ydl = None
 
@@ -237,9 +240,21 @@ class Downloader:
             pass
 
     def _postprocessor_hook(self, d: dict) -> None:
-        if d["status"] == "finished":
-            title = d.get("info_dict", {}).get("title", "file")
-            self._emit_status(f"⚙️  Processing: {title}")
+        status = d.get("status")
+        title = d.get("info_dict", {}).get("title", "file")
+        postprocessor = d.get("postprocessor", "")
+
+        if status == "started":
+            if "FFmpegVideoConvertor" in postprocessor:
+                self._emit_status("⚙️  Converting to MP4…")
+            elif "FFmpegExtractAudio" in postprocessor:
+                self._emit_status("⚙️  Extracting audio…")
+            elif "FFmpegMerger" in postprocessor:
+                self._emit_status("⚙️  Merging video + audio…")
+            else:
+                self._emit_status(f"⚙️  Processing…")
+        elif status == "finished":
+            self._emit_status(f"⚙️  Finalising: {title}")
 
     def _emit_status(self, msg: str) -> None:
         if self.on_status:

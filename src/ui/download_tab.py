@@ -22,6 +22,36 @@ from src.ui.components import (
 BROWSERS = ["None", "chrome", "safari", "firefox", "edge", "brave"]
 
 
+def _friendly_error(msg: str) -> str:
+    """Translate raw yt-dlp / network errors into readable messages."""
+    m = msg.lower()
+    if "http error 403" in m:
+        return (
+            "Access denied (HTTP 403).\n\n"
+            "Try selecting your browser in Advanced → Browser Cookies\n"
+            "so the app can use your YouTube session."
+        )
+    if "http error 429" in m:
+        return "Too many requests (HTTP 429). Wait a few minutes and try again."
+    if "video unavailable" in m:
+        return "This video is unavailable or has been removed."
+    if "private video" in m:
+        return "This video is private. You need to be logged in to download it."
+    if "sign in" in m or "login" in m:
+        return (
+            "YouTube requires sign-in for this video.\n\n"
+            "Select your browser under Advanced → Browser Cookies."
+        )
+    if "no internet" in m or "network" in m or "connection" in m:
+        return "No internet connection. Check your network and try again."
+    if "ffmpeg" in m:
+        return "FFmpeg error. Make sure FFmpeg is installed: brew install ffmpeg"
+    if "no space" in m or "disk" in m:
+        return "Not enough disk space to save the file."
+    # Return the raw message if no pattern matched, but strip yt-dlp prefix noise
+    return msg.replace("ERROR: ", "").strip()
+
+
 class DownloadTab(ctk.CTkFrame):
     def __init__(
         self,
@@ -259,13 +289,20 @@ class DownloadTab(ctk.CTkFrame):
         self._progress.set_status("Fetching video info…")
         self.update_idletasks()
 
+        # Run in a background thread so the UI doesn't freeze
+        from threading import Thread
+        Thread(target=self._fetch_worker, args=(url,), daemon=True).start()
+
+    def _fetch_worker(self, url: str) -> None:
+        """Background thread: fetch video info without blocking the UI."""
         try:
             info = self._downloader.fetch_info(url)
+            self.after(0, lambda: self._apply_fetched_info(info))
         except DownloadError as exc:
-            messagebox.showerror("Fetch Failed", str(exc))
-            self._progress.reset()
-            return
+            msg = str(exc)
+            self.after(0, lambda: self._on_fetch_error(msg))
 
+    def _apply_fetched_info(self, info: dict) -> None:
         self._current_info = info
         title = info.get("title", "Unknown")
         duration = format_duration(info.get("duration"))
@@ -284,6 +321,10 @@ class DownloadTab(ctk.CTkFrame):
             self.after(50, lambda: self._load_thumbnail(thumb_url))
 
         self._progress.set_status("✅ Ready to download")
+
+    def _on_fetch_error(self, msg: str) -> None:
+        self._progress.set_status("❌ Fetch failed")
+        messagebox.showerror("Fetch Failed", _friendly_error(msg))
 
     def _load_thumbnail(self, url: str) -> None:
         img = fetch_thumbnail(url)
@@ -318,7 +359,14 @@ class DownloadTab(ctk.CTkFrame):
             audio_only=audio_only,
             video_format=video_format,
             on_complete=lambda path: self._handle_complete(path, audio_only),
+            on_error=lambda msg: self.after(0, lambda: self._handle_download_error(msg)),
         )
+
+    def _handle_download_error(self, msg: str) -> None:
+        """Called on main thread when download fails — always resets the button."""
+        self._dl_btn.set_idle()
+        self._progress.set_status("❌ Download failed")
+        messagebox.showerror("Download Failed", _friendly_error(msg))
 
     def _handle_complete(self, file_path: str, audio_only: bool) -> None:
         self.after(0, lambda: self._finalise(file_path, audio_only))
@@ -340,4 +388,11 @@ class DownloadTab(ctk.CTkFrame):
         self.after(0, lambda: self._progress.set_progress(percent, speed, eta))
 
     def _on_status(self, msg: str) -> None:
-        self.after(0, lambda: self._progress.set_status(msg))
+        def _update():
+            self._progress.set_status(msg)
+            if "⚙️" in msg:
+                self._dl_btn.set_processing()
+            elif "✅" in msg:
+                # completed message arrives before on_complete — keep busy until finalise
+                pass
+        self.after(0, _update)

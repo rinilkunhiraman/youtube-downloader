@@ -76,8 +76,17 @@ class ProgressSection(ctk.CTkFrame):
 
     def set_status(self, msg: str) -> None:
         self.label.configure(text=msg)
+        # Show indeterminate pulse while processing (no percent available)
+        if "⚙️" in msg:
+            self.bar.configure(mode="indeterminate")
+            self.bar.start()
+        else:
+            self.bar.stop()
+            self.bar.configure(mode="determinate")
 
     def reset(self) -> None:
+        self.bar.stop()
+        self.bar.configure(mode="determinate")
         self.bar.set(0)
         self.label.configure(text="Ready")
 
@@ -93,6 +102,7 @@ class DownloadButton(ctk.CTkButton):
 
     _IDLE_TEXT = "⬇️  START DOWNLOAD"
     _BUSY_TEXT = "Downloading…"
+    _PROCESSING_TEXT = "⚙️  Processing…"
 
     def __init__(self, master, command=None, **kwargs):
         kwargs.setdefault("height", 55)
@@ -101,10 +111,13 @@ class DownloadButton(ctk.CTkButton):
         super().__init__(master, text=self._IDLE_TEXT, command=command, **kwargs)
 
     def set_busy(self) -> None:
-        self.configure(state="disabled", text=self._BUSY_TEXT)
+        self.configure(state="disabled", text=self._BUSY_TEXT, fg_color="#1a6e3c")
+
+    def set_processing(self) -> None:
+        self.configure(state="disabled", text=self._PROCESSING_TEXT, fg_color="#5a5a00")
 
     def set_idle(self) -> None:
-        self.configure(state="normal", text=self._IDLE_TEXT)
+        self.configure(state="normal", text=self._IDLE_TEXT, fg_color=ACCENT_GREEN)
 
 
 # ---------------------------------------------------------------------------
