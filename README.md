@@ -207,11 +207,21 @@ Some videos require authentication. Export cookies from your browser and save as
 
 ### App doesn't launch on macOS
 
-If you see a "Python" quit unexpectedly error, you may need Tkinter support. Install Python via Homebrew:
+**Error:** "Apple could not verify 'YouTube Downloader' is free of malware"
 
+This happens because the app isn't code-signed (requires a paid Apple Developer account).
+
+**Fix:**
+1. Right-click (or Control+click) the app → select "Open"
+2. Click "Open" in the security dialog
+3. The app will now open, and you won't see this warning again
+
+**Alternative via Terminal:**
 ```bash
-brew install python-tk@3.13
+xattr -d com.apple.quarantine "/path/to/YouTube Downloader.app"
 ```
+
+**Why this happens:** macOS Gatekeeper blocks all unsigned apps by default. Code signing requires a $99/year Apple Developer membership.
 
 ## License
 
