@@ -57,8 +57,12 @@ class DownloadTab(ctk.CTkFrame):
     # ------------------------------------------------------------------
 
     def _build(self) -> None:
+        # Wrap everything in a scrollable frame so content doesn't get cut off
+        scroll_container = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        scroll_container.pack(fill="both", expand=True, padx=0, pady=0)
+
         # --- URL row ---
-        url_frame = ctk.CTkFrame(self)
+        url_frame = ctk.CTkFrame(scroll_container)
         url_frame.pack(pady=15, padx=25, fill="x")
 
         ctk.CTkLabel(
@@ -81,7 +85,7 @@ class DownloadTab(ctk.CTkFrame):
         ).pack(side="right", padx=20)
 
         # --- Metadata preview ---
-        meta = SectionFrame(self)
+        meta = SectionFrame(scroll_container)
         meta.pack(pady=10, padx=25, fill="x")
 
         self._title_label = ctk.CTkLabel(
@@ -106,7 +110,7 @@ class DownloadTab(ctk.CTkFrame):
         self._thumbnail.pack(pady=10)
 
         # --- Options ---
-        options = SectionFrame(self, title="Options")
+        options = SectionFrame(scroll_container, title="Options")
         options.pack(pady=10, padx=25, fill="x")
 
         # Quality selector (only applies to video, not audio-only)
@@ -147,11 +151,11 @@ class DownloadTab(ctk.CTkFrame):
         ).pack(anchor="w")
 
         # --- Progress ---
-        self._progress = ProgressSection(self)
+        self._progress = ProgressSection(scroll_container)
         self._progress.pack(pady=15, padx=30, fill="x")
 
         # --- Download button ---
-        self._dl_btn = DownloadButton(self, command=self._start_download)
+        self._dl_btn = DownloadButton(scroll_container, command=self._start_download)
         self._dl_btn.pack(pady=20, padx=40, fill="x")
 
     # ------------------------------------------------------------------

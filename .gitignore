@@ -13,6 +13,16 @@ wheels/
 cookies.txt
 download_history.json
 
+# Build artifacts
+*.app
+*.dmg
+*.spec
+build/
+dist/
+
+# Generated icons (keep source in git)
+assets/icon_*.png
+
 # IDE
 .vscode/
 .idea/

@@ -3,6 +3,10 @@ Root application window — wires tabs and shared services together.
 """
 from __future__ import annotations
 
+import os
+from pathlib import Path
+from tkinter import PhotoImage
+
 import customtkinter as ctk
 
 from src.config import (
@@ -11,6 +15,7 @@ from src.config import (
     APP_TITLE,
     APPEARANCE_MODE,
     COLOR_THEME,
+    ROOT_DIR,
 )
 from src.history import HistoryManager
 from src.ui.download_tab import DownloadTab
@@ -37,10 +42,30 @@ class App(ctk.CTk):
         self.geometry(APP_GEOMETRY)
         self.minsize(*APP_MIN_SIZE)
 
+        # Set app icon if available
+        self._set_icon()
+
         # Shared services
         self._history = HistoryManager()
 
         self._build()
+
+    # ------------------------------------------------------------------
+    # Icon
+    # ------------------------------------------------------------------
+
+    def _set_icon(self) -> None:
+        """Set window icon from assets/icon.png if it exists."""
+        icon_path = Path(ROOT_DIR) / "assets" / "icon.png"
+        if icon_path.exists():
+            try:
+                # For Tk windows, iconphoto expects a PhotoImage
+                img = PhotoImage(file=str(icon_path))
+                self.iconphoto(True, img)
+                # Keep a reference to prevent garbage collection
+                self._icon = img
+            except Exception:
+                pass  # Icon optional, silently skip if it fails
 
     # ------------------------------------------------------------------
     # Layout
