@@ -77,7 +77,42 @@ def sanitize_filename(name: str, replacement: str = "_") -> str:
 # ---------------------------------------------------------------------------
 
 
-def share_to_whatsapp(file_path: str) -> None:
+def copy_file_to_clipboard(file_path: str) -> None:
+    """
+    Copy a file to the macOS clipboard so it can be pasted into apps like WhatsApp.
+
+    Raises:
+        FileNotFoundError  if the file doesn't exist.
+        RuntimeError       if the clipboard operation fails.
+    """
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    if sys.platform == "darwin":
+        # AppleScript sets the clipboard to the file as an alias object
+        # This makes it pasteable in Finder, WhatsApp, Mail, etc.
+        script = f'set the clipboard to (POSIX file "{file_path}")'
+        result = subprocess.run(
+            ["osascript", "-e", script],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"Clipboard copy failed: {result.stderr.strip()}")
+    elif sys.platform == "win32":
+        # PowerShell Set-Clipboard with FileInfo
+        script = f"Set-Clipboard -Path '{file_path}'"
+        result = subprocess.run(
+            ["powershell", "-Command", script],
+            capture_output=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError("Clipboard copy failed on Windows.")
+    else:
+        raise RuntimeError("Copy to clipboard is not supported on this platform.")
+
+
+
     """
     Share a file via WhatsApp on macOS.
 

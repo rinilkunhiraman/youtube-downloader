@@ -10,7 +10,7 @@ import customtkinter as ctk
 
 from src.config import HISTORY_TITLE_MAX_LEN, WHATSAPP_GREEN
 from src.history import HistoryEntry, HistoryManager
-from src.utils import reveal_in_finder, share_to_whatsapp
+from src.utils import copy_file_to_clipboard, reveal_in_finder, share_to_whatsapp
 
 
 class HistoryTab(ctk.CTkFrame):
@@ -133,6 +133,16 @@ class HistoryTab(ctk.CTkFrame):
 
         ctk.CTkButton(
             btn_frame,
+            text="Copy File",
+            width=80,
+            height=32,
+            fg_color="#4a4a8a",
+            hover_color="#6060aa",
+            command=lambda e=entry: self._copy_file(e),
+        ).pack(side="left", padx=3)
+
+        ctk.CTkButton(
+            btn_frame,
             text="Share",
             width=70,
             height=32,
@@ -149,6 +159,18 @@ class HistoryTab(ctk.CTkFrame):
             hover_color="#cc3333",
             command=lambda i=idx: self._delete_entry(i),
         ).pack(side="left", padx=3)
+
+    def _copy_file(self, entry: HistoryEntry) -> None:
+        try:
+            copy_file_to_clipboard(entry.path)
+            messagebox.showinfo(
+                "Copied",
+                "File copied to clipboard.\nPaste it directly into WhatsApp, Mail, or Finder.",
+            )
+        except FileNotFoundError:
+            messagebox.showerror("Not Found", f"File not found:\n{entry.path}")
+        except RuntimeError as exc:
+            messagebox.showerror("Copy Failed", str(exc))
 
     def _open_folder(self, entry: HistoryEntry) -> None:
         try:
