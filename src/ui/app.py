@@ -10,9 +10,11 @@ from tkinter import PhotoImage
 import customtkinter as ctk
 
 from src.config import (
+    APP_AUTHOR,
     APP_GEOMETRY,
     APP_MIN_SIZE,
     APP_TITLE,
+    APP_VERSION,
     APPEARANCE_MODE,
     COLOR_THEME,
     ROOT_DIR,
@@ -73,7 +75,7 @@ class App(ctk.CTk):
 
     def _build(self) -> None:
         self._tabs = ctk.CTkTabview(self)
-        self._tabs.pack(pady=10, padx=20, fill="both", expand=True)
+        self._tabs.pack(pady=(10, 0), padx=20, fill="both", expand=True)
 
         # --- Downloader tab ---
         dl_frame = self._tabs.add("⬇️  Downloader")
@@ -87,6 +89,25 @@ class App(ctk.CTk):
         hist_frame = self._tabs.add("📋  History")
         self._history_tab = HistoryTab(hist_frame, history_manager=self._history)
         self._history_tab.pack(fill="both", expand=True)
+
+        # --- Footer -------------------------------------------------------
+        footer = ctk.CTkFrame(self, height=28, fg_color="#0d0d0d", corner_radius=0)
+        footer.pack(fill="x", side="bottom")
+        footer.pack_propagate(False)
+
+        ctk.CTkLabel(
+            footer,
+            text=f"YouTube Downloader  v{APP_VERSION}  •  {APP_AUTHOR}",
+            font=ctk.CTkFont(size=11),
+            text_color="#555577",
+        ).pack(side="left", padx=16)
+
+        ctk.CTkLabel(
+            footer,
+            text="Powered by yt-dlp",
+            font=ctk.CTkFont(size=11),
+            text_color="#444466",
+        ).pack(side="right", padx=16)
 
     # ------------------------------------------------------------------
     # Cross-tab event bridge

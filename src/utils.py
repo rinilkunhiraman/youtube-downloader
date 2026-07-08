@@ -89,30 +89,20 @@ def copy_file_to_clipboard(file_path: str) -> None:
         raise FileNotFoundError(f"File not found: {file_path}")
 
     if sys.platform == "darwin":
-        # AppleScript sets the clipboard to the file as an alias object
-        # This makes it pasteable in Finder, WhatsApp, Mail, etc.
         script = f'set the clipboard to (POSIX file "{file_path}")'
-        result = subprocess.run(
-            ["osascript", "-e", script],
-            capture_output=True,
-            text=True,
-        )
+        result = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
         if result.returncode != 0:
             raise RuntimeError(f"Clipboard copy failed: {result.stderr.strip()}")
     elif sys.platform == "win32":
-        # PowerShell Set-Clipboard with FileInfo
         script = f"Set-Clipboard -Path '{file_path}'"
-        result = subprocess.run(
-            ["powershell", "-Command", script],
-            capture_output=True,
-        )
+        result = subprocess.run(["powershell", "-Command", script], capture_output=True)
         if result.returncode != 0:
             raise RuntimeError("Clipboard copy failed on Windows.")
     else:
         raise RuntimeError("Copy to clipboard is not supported on this platform.")
 
 
-
+def share_to_whatsapp(file_path: str) -> None:
     """
     Share a file via WhatsApp on macOS.
 
@@ -123,25 +113,17 @@ def copy_file_to_clipboard(file_path: str) -> None:
 
     Raises:
         FileNotFoundError  if the file doesn't exist.
-        RuntimeError       if WhatsApp cannot be opened.
+        RuntimeError("whatsapp_web") if WhatsApp Desktop isn't installed.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
 
     if sys.platform == "darwin":
-        # Step 1: Reveal the file in Finder
         subprocess.run(["open", "-R", file_path], check=False)
-
-        # Step 2: Try to open WhatsApp
-        result = subprocess.run(
-            ["open", "-a", "WhatsApp"],
-            capture_output=True,
-        )
+        result = subprocess.run(["open", "-a", "WhatsApp"], capture_output=True)
         if result.returncode != 0:
-            # WhatsApp Desktop not installed — fall back to web
             subprocess.run(["open", "https://web.whatsapp.com"], check=False)
             raise RuntimeError("whatsapp_web")
-
     elif sys.platform == "win32":
         subprocess.run(["explorer", f"/select,{file_path}"], check=False)
         subprocess.run(["start", "whatsapp:"], shell=True, check=False)
